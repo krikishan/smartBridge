@@ -1,0 +1,9 @@
+.order-success-page { padding: var(--space-3xl) 0; display: flex; justify-content: center; }
+.success-card { max-width: 520px; width: 100%; padding: var(--space-2xl); text-align: center; }
+.success-icon { font-size: 64px; color: var(--color-success); margin-bottom: var(--space-md); }
+.success-card h1 { font-size: var(--font-size-h2); margin-bottom: var(--space-sm); }
+.success-card > p { margin-bottom: var(--space-xl); }
+.success-details { text-align: left; padding: var(--space-md); background: var(--color-bg); border-radius: var(--radius); margin-bottom: var(--space-xl); }
+.success-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: var(--font-size-small); color: var(--color-text-secondary); border-bottom: 1px solid var(--color-border-light); }
+.success-row:last-child { border-bottom: none; }
+.success-actions { display: flex; gap: var(--space-sm); justify-content: center; flex-wrap: wrap; }
