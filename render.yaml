@@ -13,7 +13,7 @@ services:
       - key: PORT
         value: 10000
       - key: CLIENT_URL
-        value: https://shopez-web.vercel.app
+        value: https://client-nine-flame-44.vercel.app
       - key: MONGO_URI
         sync: false
       - key: JWT_SECRET
