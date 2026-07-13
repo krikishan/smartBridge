@@ -17,9 +17,9 @@ export default function Footer() {
               Your one-stop destination for premium products at great prices. Quality guaranteed, delivered to your doorstep.
             </p>
             <div className="footer-socials">
-              <a href="#" className="social-link" aria-label="Twitter"><FiTwitter /></a>
-              <a href="#" className="social-link" aria-label="Instagram"><FiInstagram /></a>
-              <a href="#" className="social-link" aria-label="GitHub"><FiGithub /></a>
+              <a href="/" onClick={e => e.preventDefault()} className="social-link" aria-label="Twitter"><FiTwitter /></a>
+              <a href="/" onClick={e => e.preventDefault()} className="social-link" aria-label="Instagram"><FiInstagram /></a>
+              <a href="/" onClick={e => e.preventDefault()} className="social-link" aria-label="GitHub"><FiGithub /></a>
             </div>
           </div>
 
@@ -59,8 +59,8 @@ export default function Footer() {
             © {new Date().getFullYear()} ShopEZ. All rights reserved.
           </p>
           <div className="footer-bottom-links">
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Service</a>
+            <a href="/" onClick={e => e.preventDefault()}>Privacy Policy</a>
+            <a href="/" onClick={e => e.preventDefault()}>Terms of Service</a>
           </div>
         </div>
       </div>

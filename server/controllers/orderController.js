@@ -1,5 +1,6 @@
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
+const Product = require('../models/Product');
 
 // @desc    Create a new order
 // @route   POST /api/orders
@@ -10,6 +11,36 @@ const createOrder = async (req, res, next) => {
     if (!products || products.length === 0) {
       res.status(400);
       throw new Error('No products in order');
+    }
+
+    if (!shippingAddress || !shippingAddress.fullName || !shippingAddress.phone || !shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zipCode) {
+      res.status(400);
+      throw new Error('Complete shipping address is required');
+    }
+
+    if (!paymentMethod) {
+      res.status(400);
+      throw new Error('Payment method is required');
+    }
+
+    // Validate stock availability for all products before creating order
+    for (const item of products) {
+      const product = await Product.findById(item.productId);
+      if (!product) {
+        res.status(400);
+        throw new Error(`Product "${item.title}" is no longer available`);
+      }
+      if (product.stock < item.quantity) {
+        res.status(400);
+        throw new Error(`Insufficient stock for "${item.title}". Only ${product.stock} available.`);
+      }
+    }
+
+    // Decrement stock for all products
+    for (const item of products) {
+      await Product.findByIdAndUpdate(item.productId, {
+        $inc: { stock: -item.quantity },
+      });
     }
 
     const order = await Order.create({

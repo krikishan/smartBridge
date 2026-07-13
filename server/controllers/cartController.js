@@ -1,4 +1,5 @@
 const Cart = require('../models/Cart');
+const Product = require('../models/Product');
 
 // @desc    Get user's cart
 // @route   GET /api/cart
@@ -24,6 +25,22 @@ const addToCart = async (req, res, next) => {
   try {
     const { productId, quantity = 1 } = req.body;
 
+    if (!productId) {
+      res.status(400);
+      throw new Error('Product ID is required');
+    }
+
+    // Validate product exists and has stock
+    const product = await Product.findById(productId);
+    if (!product) {
+      res.status(404);
+      throw new Error('Product not found');
+    }
+    if (product.stock <= 0) {
+      res.status(400);
+      throw new Error('Product is out of stock');
+    }
+
     let cart = await Cart.findOne({ userId: req.user._id });
 
     if (!cart) {
@@ -35,8 +52,17 @@ const addToCart = async (req, res, next) => {
     );
 
     if (existingItem) {
-      existingItem.quantity += quantity;
+      const newQuantity = existingItem.quantity + quantity;
+      if (newQuantity > product.stock) {
+        res.status(400);
+        throw new Error(`Only ${product.stock} items available in stock`);
+      }
+      existingItem.quantity = newQuantity;
     } else {
+      if (quantity > product.stock) {
+        res.status(400);
+        throw new Error(`Only ${product.stock} items available in stock`);
+      }
       cart.items.push({ productId, quantity });
     }
 
@@ -54,6 +80,12 @@ const addToCart = async (req, res, next) => {
 const updateQuantity = async (req, res, next) => {
   try {
     const { quantity } = req.body;
+
+    if (!quantity || quantity < 1) {
+      res.status(400);
+      throw new Error('Quantity must be at least 1');
+    }
+
     const cart = await Cart.findOne({ userId: req.user._id });
 
     if (!cart) {
@@ -68,6 +100,13 @@ const updateQuantity = async (req, res, next) => {
     if (!item) {
       res.status(404);
       throw new Error('Item not in cart');
+    }
+
+    // Validate stock
+    const product = await Product.findById(req.params.productId);
+    if (product && quantity > product.stock) {
+      res.status(400);
+      throw new Error(`Only ${product.stock} items available in stock`);
     }
 
     item.quantity = quantity;

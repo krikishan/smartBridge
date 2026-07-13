@@ -78,7 +78,7 @@ export default function Cart() {
                   <div className="quantity-control">
                     <button onClick={() => updateQuantity(p._id, Math.max(1, item.quantity - 1))} disabled={item.quantity <= 1}><HiMinus /></button>
                     <span>{item.quantity}</span>
-                    <button onClick={() => updateQuantity(p._id, item.quantity + 1)}><HiPlus /></button>
+                    <button onClick={() => updateQuantity(p._id, item.quantity + 1)} disabled={p.stock && item.quantity >= p.stock}><HiPlus /></button>
                   </div>
                   <p className="cart-item-subtotal">{formatPrice(discounted * item.quantity)}</p>
                   <button className="btn btn-ghost btn-sm cart-remove-btn" onClick={() => removeItem(p._id)}>

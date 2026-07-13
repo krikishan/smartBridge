@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { HiOutlineAdjustments, HiOutlineX } from 'react-icons/hi';
@@ -33,8 +33,8 @@ export default function Products() {
         ]);
         setCategories(catRes.data.categories);
         setBrands(brandRes.data.brands);
-      } catch (err) {
-        console.error(err);
+      } catch {
+        // silently handle filter fetch errors
       }
     };
     fetchFilters();
@@ -60,14 +60,14 @@ export default function Products() {
         const res = await productAPI.getAll(params);
         setProducts(res.data.products);
         setPagination(res.data.pagination);
-      } catch (err) {
-        console.error(err);
+      } catch {
+        // silently handle product fetch errors
       } finally {
         setLoading(false);
       }
     };
     fetchProducts();
-  }, [searchParams]);
+  }, [activeCategory, activeBrand, activeSort, activeMinPrice, activeMaxPrice, activeRating, activePage, searchParams]);
 
   const updateFilter = useCallback((key, value) => {
     const newParams = new URLSearchParams(searchParams);
@@ -90,6 +90,16 @@ export default function Products() {
     setSearchParams(newParams);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [searchParams, setSearchParams]);
+
+  // Body scroll lock when mobile filters are open
+  useEffect(() => {
+    if (filtersOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [filtersOpen]);
 
   const hasFilters = activeCategory || activeBrand || activeMinPrice || activeMaxPrice || activeRating;
 
@@ -240,7 +250,13 @@ export default function Products() {
                 {activeMinPrice && (
                   <span className="active-filter-tag">
                     Price filter
-                    <button onClick={() => { updateFilter('minPrice', ''); updateFilter('maxPrice', ''); }}><HiOutlineX /></button>
+                    <button onClick={() => {
+                      const params = new URLSearchParams(searchParams);
+                      params.delete('minPrice');
+                      params.delete('maxPrice');
+                      params.set('page', '1');
+                      setSearchParams(params);
+                    }}><HiOutlineX /></button>
                   </span>
                 )}
                 {activeRating && (

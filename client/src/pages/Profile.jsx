@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { HiOutlineUser, HiOutlineShoppingBag, HiOutlineHeart, HiOutlineLocationMarker, HiOutlineLogout, HiOutlinePencil, HiOutlineTrash, HiOutlinePlus } from 'react-icons/hi';
+import { HiOutlineUser, HiOutlineShoppingBag, HiOutlineHeart, HiOutlineLocationMarker, HiOutlineLogout, HiOutlinePencil, HiOutlineTrash, HiOutlinePlus, HiOutlineEye, HiOutlineEyeOff, HiOutlineLockClosed } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
 import { authAPI, orderAPI } from '../api/axios';
 import { formatPrice, formatDate, getStatusColor } from '../utils/formatters';
@@ -15,6 +15,9 @@ export default function Profile() {
   const [orders, setOrders] = useState([]);
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState({ name: user?.name || '', email: user?.email || '', mobile: user?.mobile || '' });
+  const [passwordData, setPasswordData] = useState({ password: '', confirmPassword: '' });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [addingAddress, setAddingAddress] = useState(false);
   const [addressForm, setAddressForm] = useState({ fullName: '', phone: '', street: '', city: '', state: '', zipCode: '', country: 'India' });
 
@@ -24,12 +27,56 @@ export default function Profile() {
     }
   }, [tab]);
 
+  // Reset form data when cancelling edit or when user changes
+  const handleToggleEdit = () => {
+    if (editing) {
+      // Cancel → reset to current user values
+      setFormData({ name: user?.name || '', email: user?.email || '', mobile: user?.mobile || '' });
+      setPasswordData({ password: '', confirmPassword: '' });
+      setShowPassword(false);
+      setShowConfirmPassword(false);
+    }
+    setEditing(!editing);
+  };
+
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
+
+    // Validate name
+    if (!formData.name.trim()) {
+      toast.error('Name cannot be empty');
+      return;
+    }
+
+    // Validate mobile if provided
+    if (formData.mobile && !/^(\+91[\-\s]?)?[6-9]\d{9}$/.test(formData.mobile)) {
+      toast.error('Please enter a valid mobile number');
+      return;
+    }
+
+    // Validate password if changing
+    if (passwordData.password) {
+      if (passwordData.password.length < 6) {
+        toast.error('Password must be at least 6 characters');
+        return;
+      }
+      if (passwordData.password !== passwordData.confirmPassword) {
+        toast.error('Passwords do not match');
+        return;
+      }
+    }
+
     try {
-      const res = await authAPI.updateProfile(formData);
+      const updateData = { ...formData };
+      if (passwordData.password) {
+        updateData.password = passwordData.password;
+      }
+      const res = await authAPI.updateProfile(updateData);
       updateUser(res.data.user);
       setEditing(false);
+      setPasswordData({ password: '', confirmPassword: '' });
+      setShowPassword(false);
+      setShowConfirmPassword(false);
       toast.success('Profile updated');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Update failed');
@@ -38,6 +85,19 @@ export default function Profile() {
 
   const handleAddAddress = async (e) => {
     e.preventDefault();
+
+    // Validate phone format
+    if (!/^(\+91[\-\s]?)?[6-9]\d{9}$/.test(addressForm.phone)) {
+      toast.error('Please enter a valid phone number');
+      return;
+    }
+
+    // Validate ZIP code
+    if (!/^\d{6}$/.test(addressForm.zipCode)) {
+      toast.error('Please enter a valid 6-digit ZIP code');
+      return;
+    }
+
     try {
       const res = await authAPI.addAddress(addressForm);
       updateUser({ ...user, addresses: res.data.addresses });
@@ -45,7 +105,7 @@ export default function Profile() {
       setAddressForm({ fullName: '', phone: '', street: '', city: '', state: '', zipCode: '', country: 'India' });
       toast.success('Address added');
     } catch (err) {
-      toast.error('Failed to add address');
+      toast.error(err.response?.data?.message || 'Failed to add address');
     }
   };
 
@@ -96,16 +156,57 @@ export default function Profile() {
             <motion.div className="card" style={{ padding: 24 }} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <div className="flex justify-between items-center" style={{ marginBottom: 24 }}>
                 <h2 className="text-h3">Personal Information</h2>
-                <button className="btn btn-outline btn-sm" onClick={() => setEditing(!editing)}>
+                <button className="btn btn-outline btn-sm" onClick={handleToggleEdit}>
                   <HiOutlinePencil /> {editing ? 'Cancel' : 'Edit'}
                 </button>
               </div>
               {editing ? (
                 <form onSubmit={handleUpdateProfile}>
-                  <div className="form-group"><label className="form-label">Name</label><input className="form-input" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} /></div>
-                  <div className="form-group"><label className="form-label">Email</label><input className="form-input" type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} /></div>
-                  <div className="form-group"><label className="form-label">Mobile</label><input className="form-input" value={formData.mobile} onChange={e => setFormData({...formData, mobile: e.target.value})} /></div>
-                  <button type="submit" className="btn btn-accent">Save Changes</button>
+                  <div className="form-group"><label className="form-label">Name</label><input className="form-input" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required /></div>
+                  <div className="form-group"><label className="form-label">Email</label><input className="form-input" type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} required /></div>
+                  <div className="form-group"><label className="form-label">Mobile</label><input className="form-input" value={formData.mobile} onChange={e => setFormData({...formData, mobile: e.target.value})} placeholder="+91 9876543210" /></div>
+
+                  <div style={{ borderTop: '1px solid var(--color-border)', paddingTop: 16, marginTop: 16 }}>
+                    <p className="text-small text-secondary" style={{ marginBottom: 12 }}>Change Password (leave blank to keep current)</p>
+                    <div className="form-group">
+                      <label className="form-label">New Password</label>
+                      <div className="input-icon-wrapper">
+                        <HiOutlineLockClosed className="input-icon" />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          className="form-input input-with-icon input-with-toggle"
+                          value={passwordData.password}
+                          onChange={e => setPasswordData({...passwordData, password: e.target.value})}
+                          placeholder="Min. 6 characters"
+                          autoComplete="new-password"
+                        />
+                        <button type="button" className="password-toggle-btn" onClick={() => setShowPassword(!showPassword)} aria-label={showPassword ? 'Hide password' : 'Show password'} tabIndex={-1}>
+                          {showPassword ? <HiOutlineEyeOff /> : <HiOutlineEye />}
+                        </button>
+                      </div>
+                    </div>
+                    {passwordData.password && (
+                      <div className="form-group">
+                        <label className="form-label">Confirm New Password</label>
+                        <div className="input-icon-wrapper">
+                          <HiOutlineLockClosed className="input-icon" />
+                          <input
+                            type={showConfirmPassword ? 'text' : 'password'}
+                            className="form-input input-with-icon input-with-toggle"
+                            value={passwordData.confirmPassword}
+                            onChange={e => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                            placeholder="Re-enter new password"
+                            autoComplete="new-password"
+                          />
+                          <button type="button" className="password-toggle-btn" onClick={() => setShowConfirmPassword(!showConfirmPassword)} aria-label={showConfirmPassword ? 'Hide password' : 'Show password'} tabIndex={-1}>
+                            {showConfirmPassword ? <HiOutlineEyeOff /> : <HiOutlineEye />}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <button type="submit" className="btn btn-accent" style={{ marginTop: 16 }}>Save Changes</button>
                 </form>
               ) : (
                 <div className="profile-info-grid">
@@ -183,13 +284,13 @@ export default function Profile() {
                 <form className="card" style={{ padding: 20, marginBottom: 16 }} onSubmit={handleAddAddress}>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                     <div className="form-group"><label className="form-label">Full Name</label><input className="form-input" required value={addressForm.fullName} onChange={e => setAddressForm({...addressForm, fullName: e.target.value})} /></div>
-                    <div className="form-group"><label className="form-label">Phone</label><input className="form-input" required value={addressForm.phone} onChange={e => setAddressForm({...addressForm, phone: e.target.value})} /></div>
+                    <div className="form-group"><label className="form-label">Phone</label><input className="form-input" required value={addressForm.phone} onChange={e => setAddressForm({...addressForm, phone: e.target.value})} placeholder="+91 9876543210" /></div>
                   </div>
                   <div className="form-group"><label className="form-label">Street</label><input className="form-input" required value={addressForm.street} onChange={e => setAddressForm({...addressForm, street: e.target.value})} /></div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
                     <div className="form-group"><label className="form-label">City</label><input className="form-input" required value={addressForm.city} onChange={e => setAddressForm({...addressForm, city: e.target.value})} /></div>
                     <div className="form-group"><label className="form-label">State</label><input className="form-input" required value={addressForm.state} onChange={e => setAddressForm({...addressForm, state: e.target.value})} /></div>
-                    <div className="form-group"><label className="form-label">ZIP</label><input className="form-input" required value={addressForm.zipCode} onChange={e => setAddressForm({...addressForm, zipCode: e.target.value})} /></div>
+                    <div className="form-group"><label className="form-label">ZIP Code</label><input className="form-input" required value={addressForm.zipCode} onChange={e => setAddressForm({...addressForm, zipCode: e.target.value})} pattern="\d{6}" title="6-digit ZIP code" /></div>
                   </div>
                   <button type="submit" className="btn btn-accent">Save Address</button>
                 </form>

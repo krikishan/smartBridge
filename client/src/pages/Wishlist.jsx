@@ -14,7 +14,7 @@ export default function Wishlist() {
       updateUser(res.data.user);
       setLoading(false);
     }).catch(() => setLoading(false));
-  }, []);
+  }, [updateUser]);
 
   const handleChange = useCallback(() => {
     authAPI.getProfile().then(res => updateUser(res.data.user)).catch(() => {});

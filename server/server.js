@@ -20,6 +20,18 @@ connectDB();
 
 const app = express();
 
+// Security: remove X-Powered-By header
+app.disable('x-powered-by');
+
+// Security headers middleware
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
 // Middleware
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
@@ -28,6 +40,27 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Input sanitization middleware — strip MongoDB operators from req.body, req.query, req.params
+const sanitize = (obj) => {
+  if (obj && typeof obj === 'object') {
+    for (const key of Object.keys(obj)) {
+      if (key.startsWith('$')) {
+        delete obj[key];
+      } else if (typeof obj[key] === 'object') {
+        sanitize(obj[key]);
+      }
+    }
+  }
+  return obj;
+};
+
+app.use((req, res, next) => {
+  if (req.body) sanitize(req.body);
+  if (req.query) sanitize(req.query);
+  if (req.params) sanitize(req.params);
+  next();
+});
 
 // API Routes
 app.use('/api/auth', authRoutes);

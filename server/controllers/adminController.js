@@ -7,43 +7,43 @@ const Order = require('../models/Order');
 // @route   GET /api/admin/dashboard
 const getDashboardStats = async (req, res, next) => {
   try {
-    const [totalUsers, totalProducts, totalOrders, orders] = await Promise.all([
-      User.countDocuments({ role: 'user' }),
-      Product.countDocuments(),
-      Order.countDocuments(),
-      Order.find().select('total status orderedDate'),
-    ]);
-
-    const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
-
-    const statusCounts = orders.reduce((acc, order) => {
-      acc[order.status] = (acc[order.status] || 0) + 1;
-      return acc;
-    }, {});
-
     // Monthly revenue for last 6 months
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-    const monthlyRevenue = await Order.aggregate([
-      { $match: { orderedDate: { $gte: sixMonthsAgo } } },
-      {
-        $group: {
-          _id: {
-            year: { $year: '$orderedDate' },
-            month: { $month: '$orderedDate' },
+    const [totalUsers, totalProducts, totalOrders, revenueAgg, statusAgg, monthlyRevenue, recentOrders] = await Promise.all([
+      User.countDocuments({ role: 'user' }),
+      Product.countDocuments(),
+      Order.countDocuments(),
+      // Aggregate total revenue instead of loading all orders into memory
+      Order.aggregate([{ $group: { _id: null, total: { $sum: '$total' } } }]),
+      // Aggregate status counts
+      Order.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
+      Order.aggregate([
+        { $match: { orderedDate: { $gte: sixMonthsAgo } } },
+        {
+          $group: {
+            _id: {
+              year: { $year: '$orderedDate' },
+              month: { $month: '$orderedDate' },
+            },
+            revenue: { $sum: '$total' },
+            count: { $sum: 1 },
           },
-          revenue: { $sum: '$total' },
-          count: { $sum: 1 },
         },
-      },
-      { $sort: { '_id.year': 1, '_id.month': 1 } },
+        { $sort: { '_id.year': 1, '_id.month': 1 } },
+      ]),
+      Order.find()
+        .sort({ orderedDate: -1 })
+        .limit(5)
+        .populate('userId', 'name email'),
     ]);
 
-    const recentOrders = await Order.find()
-      .sort({ orderedDate: -1 })
-      .limit(5)
-      .populate('userId', 'name email');
+    const totalRevenue = revenueAgg.length > 0 ? revenueAgg[0].total : 0;
+    const statusCounts = statusAgg.reduce((acc, item) => {
+      acc[item._id] = item.count;
+      return acc;
+    }, {});
 
     res.json({
       success: true,

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
@@ -12,7 +12,7 @@ import './Checkout.css';
 
 export default function Checkout() {
   const { user } = useAuth();
-  const { cart, cartTotal, clearCart } = useCart();
+  const { cart, cartTotal, fetchCart } = useCart();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [paymentMethod, setPaymentMethod] = useState('COD');
@@ -35,6 +35,18 @@ export default function Checkout() {
   const items = cart?.items || [];
   const shippingCost = cartTotal >= 999 ? 0 : 99;
   const total = cartTotal + shippingCost;
+
+  // Fetch cart on mount to ensure fresh data
+  useEffect(() => {
+    fetchCart();
+  }, [fetchCart]);
+
+  // Redirect to cart if empty — handled in useEffect instead of render body
+  useEffect(() => {
+    if (items.length === 0 && !placing) {
+      navigate('/cart', { replace: true });
+    }
+  }, [items.length, placing, navigate]);
 
   const onAddressSubmit = () => setStep(2);
   const onPaymentSelect = () => setStep(3);
@@ -72,8 +84,8 @@ export default function Checkout() {
     }
   };
 
+  // Show nothing while redirecting
   if (items.length === 0) {
-    navigate('/cart');
     return null;
   }
 
@@ -101,32 +113,35 @@ export default function Checkout() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                   <div className="form-group">
                     <label className="form-label">Full Name</label>
-                    <input {...register('fullName', { required: 'Required' })} className={`form-input ${errors.fullName ? 'error' : ''}`} />
+                    <input {...register('fullName', { required: 'Full name is required' })} className={`form-input ${errors.fullName ? 'error' : ''}`} />
                     {errors.fullName && <span className="form-error">{errors.fullName.message}</span>}
                   </div>
                   <div className="form-group">
                     <label className="form-label">Phone</label>
-                    <input {...register('phone', { required: 'Required' })} className={`form-input ${errors.phone ? 'error' : ''}`} />
+                    <input {...register('phone', { required: 'Phone number is required', pattern: { value: /^(\+91[\-\s]?)?[6-9]\d{9}$/, message: 'Enter a valid phone number' } })} className={`form-input ${errors.phone ? 'error' : ''}`} />
                     {errors.phone && <span className="form-error">{errors.phone.message}</span>}
                   </div>
                 </div>
                 <div className="form-group">
                   <label className="form-label">Street Address</label>
-                  <input {...register('street', { required: 'Required' })} className={`form-input ${errors.street ? 'error' : ''}`} />
+                  <input {...register('street', { required: 'Street address is required' })} className={`form-input ${errors.street ? 'error' : ''}`} />
                   {errors.street && <span className="form-error">{errors.street.message}</span>}
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
                   <div className="form-group">
                     <label className="form-label">City</label>
-                    <input {...register('city', { required: 'Required' })} className={`form-input ${errors.city ? 'error' : ''}`} />
+                    <input {...register('city', { required: 'City is required' })} className={`form-input ${errors.city ? 'error' : ''}`} />
+                    {errors.city && <span className="form-error">{errors.city.message}</span>}
                   </div>
                   <div className="form-group">
                     <label className="form-label">State</label>
-                    <input {...register('state', { required: 'Required' })} className={`form-input ${errors.state ? 'error' : ''}`} />
+                    <input {...register('state', { required: 'State is required' })} className={`form-input ${errors.state ? 'error' : ''}`} />
+                    {errors.state && <span className="form-error">{errors.state.message}</span>}
                   </div>
                   <div className="form-group">
                     <label className="form-label">ZIP Code</label>
-                    <input {...register('zipCode', { required: 'Required' })} className={`form-input ${errors.zipCode ? 'error' : ''}`} />
+                    <input {...register('zipCode', { required: 'ZIP code is required', pattern: { value: /^\d{6}$/, message: 'Enter a valid 6-digit ZIP' } })} className={`form-input ${errors.zipCode ? 'error' : ''}`} />
+                    {errors.zipCode && <span className="form-error">{errors.zipCode.message}</span>}
                   </div>
                 </div>
                 <button type="submit" className="btn btn-accent btn-lg">Continue to Payment</button>

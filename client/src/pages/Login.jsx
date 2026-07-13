@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { motion } from 'framer-motion';
-import { HiOutlineMail, HiOutlineLockClosed } from 'react-icons/hi';
+import { HiOutlineMail, HiOutlineLockClosed, HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import './Auth.css';
@@ -11,6 +11,7 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm();
 
   const onSubmit = async (data) => {
@@ -48,6 +49,7 @@ export default function Login() {
                 type="email"
                 className={`form-input input-with-icon ${errors.email ? 'error' : ''}`}
                 placeholder="you@example.com"
+                autoComplete="email"
               />
             </div>
             {errors.email && <span className="form-error">{errors.email.message}</span>}
@@ -59,10 +61,20 @@ export default function Login() {
               <HiOutlineLockClosed className="input-icon" />
               <input
                 {...register('password', { required: 'Password is required', minLength: { value: 6, message: 'Min 6 characters' } })}
-                type="password"
-                className={`form-input input-with-icon ${errors.password ? 'error' : ''}`}
+                type={showPassword ? 'text' : 'password'}
+                className={`form-input input-with-icon input-with-toggle ${errors.password ? 'error' : ''}`}
                 placeholder="Enter your password"
+                autoComplete="current-password"
               />
+              <button
+                type="button"
+                className="password-toggle-btn"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                tabIndex={-1}
+              >
+                {showPassword ? <HiOutlineEyeOff /> : <HiOutlineEye />}
+              </button>
             </div>
             {errors.password && <span className="form-error">{errors.password.message}</span>}
           </div>

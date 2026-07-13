@@ -1,5 +1,8 @@
 const Product = require('../models/Product');
 
+// Helper: escape regex special characters to prevent ReDoS / injection
+const escapeRegex = (str) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 // @desc    Get all products with search, filter, sort, pagination
 // @route   GET /api/products
 const getProducts = async (req, res, next) => {
@@ -21,19 +24,20 @@ const getProducts = async (req, res, next) => {
     const query = {};
 
     if (search) {
+      const escaped = escapeRegex(search);
       query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-        { brand: { $regex: search, $options: 'i' } },
+        { title: { $regex: escaped, $options: 'i' } },
+        { description: { $regex: escaped, $options: 'i' } },
+        { brand: { $regex: escaped, $options: 'i' } },
       ];
     }
 
     if (category) {
-      query.category = { $regex: `^${category}$`, $options: 'i' };
+      query.category = { $regex: `^${escapeRegex(category)}$`, $options: 'i' };
     }
 
     if (brand) {
-      query.brand = { $regex: `^${brand}$`, $options: 'i' };
+      query.brand = { $regex: `^${escapeRegex(brand)}$`, $options: 'i' };
     }
 
     if (minPrice || maxPrice) {
@@ -128,7 +132,11 @@ const getProduct = async (req, res, next) => {
 // @route   POST /api/products
 const createProduct = async (req, res, next) => {
   try {
-    const product = await Product.create(req.body);
+    // Whitelist allowed fields to prevent mass-assignment
+    const { title, description, price, discount, stock, category, brand, images, isFeatured, isTrending } = req.body;
+    const product = await Product.create({
+      title, description, price, discount, stock, category, brand, images, isFeatured, isTrending,
+    });
     res.status(201).json({ success: true, product });
   } catch (error) {
     next(error);
@@ -139,7 +147,16 @@ const createProduct = async (req, res, next) => {
 // @route   PUT /api/products/:id
 const updateProduct = async (req, res, next) => {
   try {
-    const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
+    // Whitelist allowed fields to prevent mass-assignment
+    const allowedFields = ['title', 'description', 'price', 'discount', 'stock', 'category', 'brand', 'images', 'isFeatured', 'isTrending'];
+    const updateData = {};
+    allowedFields.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        updateData[field] = req.body[field];
+      }
+    });
+
+    const product = await Product.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
       runValidators: true,
     });
