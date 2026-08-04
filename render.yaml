@@ -15,7 +15,7 @@ services:
       - key: CLIENT_URL
         value: https://client-nine-flame-44.vercel.app
       - key: MONGO_URI
-        sync: false
+        value: mongodb+srv://smartbridge_user:ShopEZ2024Prod@cluster0.5f1ujuq.mongodb.net/shopez?retryWrites=true&w=majority
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRE
