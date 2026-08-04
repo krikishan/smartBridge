@@ -1,43 +1,67 @@
 # ShopEZ
+A full-stack e-commerce application with a React frontend and a Node.js/Express backend.
 
-ShopEZ is a full-stack e-commerce app with a React + Vite frontend and a Node.js + Express + MongoDB backend.
+## Live Demo
+**🌐 Live Demo:** [https://client-nine-flame-44.vercel.app](https://client-nine-flame-44.vercel.app)
 
-## What’s Included
+## Overview
+ShopEZ is a modern full-stack e-commerce web application that enables customers to browse products, manage shopping carts, place orders, and maintain wishlists. The project solves the need for a comprehensive digital storefront by providing an administrative dashboard for managing products, categories, orders, and promotional banners. Its main objective is to deliver a complete and seamless online shopping experience with secure authentication and role-based access control.
 
-- Customer shopping flow with search, cart, checkout, orders, and wishlist
-- Admin tools for products, categories, orders, and banners
-- JWT-based auth with role-aware routes
-- Responsive UI with reusable components and page-level styling
+## Features
+- **Customer Shopping Flow:** Product search and filtering, detailed product views, cart & wishlist management, checkout, and order history.
+- **Admin Dashboard:** Tools to manage products, categories, modify order statuses, and update promotional banners.
+- **Authentication:** Secure JWT-based login and registration with role-aware routes (Customer vs. Admin).
+- **Responsive UI:** Clean and responsive user interface built with reusable React components.
 
-## Repository Layout
+## Tech Stack
+- **Languages:** JavaScript (ES6+), HTML5, CSS3
+- **Frameworks & Libraries:** React.js, Vite, Node.js, Express.js
+- **Database:** MongoDB (with Mongoose ODM)
+- **Tools:** JSON Web Tokens (JWT), bcrypt, Render (Deployment)
 
-```
+## Project Structure
+```text
 smartBridge/
-├── client/   # React + Vite frontend
-└── server/   # Express + MongoDB API
+├── client/          # React + Vite frontend
+│   ├── public/      # Static assets
+│   ├── src/         # React source code (pages, components, utils)
+│   ├── package.json # Frontend dependencies
+│   └── vite.config.js
+├── server/          # Express + MongoDB backend API
+│   ├── config/      # Configuration files
+│   ├── controllers/ # Business logic
+│   ├── middleware/  # JWT and admin auth middleware
+│   ├── models/      # Mongoose database schemas
+│   ├── routes/      # REST API endpoints
+│   ├── package.json # Backend dependencies
+│   └── server.js    # Application entry point
+├── render.yaml      # Render deployment blueprint
+└── README.md        # Project documentation
 ```
 
-## Local Development
+## Installation
 
-### Prerequisites
-
-- Node.js 18+
-- MongoDB connection string
-
-### Install Dependencies
-
+**1. Clone the repository:**
 ```bash
+git clone https://github.com/krikishan/smartBridge.git
+cd smartBridge
+```
+
+**2. Install dependencies:**
+```bash
+# Install backend dependencies
 cd server
 npm install
 
+# Install frontend dependencies
 cd ../client
 npm install
 ```
 
-### Environment Variables
+## Usage
 
-Create `server/.env`:
-
+**1. Environment Variables:**
+Create a `.env` file in the `server/` directory:
 ```env
 PORT=5000
 MONGO_URI=mongodb://localhost:27017/shopez
@@ -47,40 +71,35 @@ NODE_ENV=development
 CLIENT_URL=http://localhost:5173
 ```
 
-Create `client/.env`:
-
+Create a `.env` file in the `client/` directory:
 ```env
 VITE_API_URL=http://localhost:5000/api
 ```
 
-### Run the App
-
+**2. Run the project locally:**
 ```bash
-# Terminal 1
+# Terminal 1: Start Backend
 cd server
 npm run dev
 
-# Terminal 2
+# Terminal 2: Start Frontend
 cd client
 npm run dev
 ```
+Open `http://localhost:5173` in your browser to view the application.
 
-## Deployment Target
+## Screenshots
+![ShopEZ Screenshot](https://via.placeholder.com/800x400?text=ShopEZ+Screenshot+Placeholder)
 
-This repo is set up for [Render](https://render.com/).
+*(Replace the placeholder above with actual screenshots of your application)*
 
-Use the included [render.yaml](render.yaml) blueprint to deploy:
+## Future Improvements
+- Online Payment Gateway Integration (Stripe/PayPal)
+- Product Reviews and Ratings system
+- AI-based Product Recommendations
+- Real-time Order Tracking and Push Notifications
+- Coupon and Discount System
 
-- `shopez-api` as the backend web service
-- `shopez-web` as the frontend static site
-
-Before deploying, set these values in Render:
-
-- `MONGO_URI`
-- `JWT_SECRET`
-- `CLIENT_URL`
-- `VITE_API_URL`
-
-## Release
-
-The first release tag is `v1.0.0`.
+## Author
+- **Name:** Kishan
+- **GitHub:** [krikishan](https://github.com/krikishan)
