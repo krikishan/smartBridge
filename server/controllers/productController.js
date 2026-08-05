@@ -58,29 +58,29 @@ const getProducts = async (req, res, next) => {
       query.isTrending = true;
     }
 
-    let sortOption = { createdAt: -1 };
+    let sortOption = { createdAt: -1, _id: 1 };
     if (sort) {
       switch (sort) {
         case 'price_asc':
-          sortOption = { price: 1 };
+          sortOption = { price: 1, _id: 1 };
           break;
         case 'price_desc':
-          sortOption = { price: -1 };
+          sortOption = { price: -1, _id: 1 };
           break;
         case 'rating':
-          sortOption = { rating: -1 };
+          sortOption = { rating: -1, _id: 1 };
           break;
         case 'newest':
-          sortOption = { createdAt: -1 };
+          sortOption = { createdAt: -1, _id: 1 };
           break;
         case 'name_asc':
-          sortOption = { title: 1 };
+          sortOption = { title: 1, _id: 1 };
           break;
         case 'name_desc':
-          sortOption = { title: -1 };
+          sortOption = { title: -1, _id: 1 };
           break;
         default:
-          sortOption = { createdAt: -1 };
+          sortOption = { createdAt: -1, _id: 1 };
       }
     }
 

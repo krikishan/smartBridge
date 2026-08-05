@@ -41,6 +41,8 @@ export default function Products() {
   }, []);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchProducts = async () => {
       setLoading(true);
       try {
@@ -58,15 +60,18 @@ export default function Products() {
         if (searchParams.get('trending')) params.trending = 'true';
 
         const res = await productAPI.getAll(params);
+        if (controller.signal.aborted) return;
         setProducts(res.data.products);
         setPagination(res.data.pagination);
       } catch {
         // silently handle product fetch errors
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
     fetchProducts();
+
+    return () => controller.abort();
   }, [activeCategory, activeBrand, activeSort, activeMinPrice, activeMaxPrice, activeRating, activePage, searchParams]);
 
   const updateFilter = useCallback((key, value) => {
