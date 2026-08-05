@@ -88,11 +88,6 @@ export default function Login() {
           Don't have an account? <Link to="/register" className="auth-link">Create one</Link>
         </p>
 
-        <div className="auth-demo">
-          <p className="text-xs text-secondary">Demo Credentials</p>
-          <p className="text-xs text-secondary">User: john@example.com / password123</p>
-          <p className="text-xs text-secondary">Admin: admin@shopez.com / admin123</p>
-        </div>
       </motion.div>
     </main>
   );
