@@ -48,7 +48,7 @@ const products = [
     stock: 30,
     category: 'Electronics',
     brand: 'Samsung',
-    images: ['https://images.unsplash.com/photo-1705517733119-32d8090c3f18?w=800&auto=format&fit=crop&q=80'],
+    images: ['https://rukminim2.flixcart.com/image/832/832/xif0q/mobile/j/m/z/-original-imahgfmxumntk7sy.jpeg?q=80'],
     rating: 4.6,
     numReviews: 389,
     isFeatured: true,
