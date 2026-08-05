@@ -23,25 +23,36 @@ export default function ProductDetails() {
   const [adding, setAdding] = useState(false);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchProduct = async () => {
       setLoading(true);
       try {
         const res = await productAPI.getOne(id);
+        if (controller.signal.aborted) return;
         setProduct(res.data.product);
         setSelectedImage(0);
         setQuantity(1);
-
-        // Fetch related products
-        const relRes = await productAPI.getAll({ category: res.data.product.category, limit: 4 });
-        setRelatedProducts(relRes.data.products.filter(p => p._id !== id));
-      } catch {
-        navigate('/404');
-      } finally {
         setLoading(false);
+
+        // Fetch related products in the background (non-blocking)
+        productAPI.getAll({ category: res.data.product.category, limit: 4 })
+          .then(relRes => {
+            if (!controller.signal.aborted) {
+              setRelatedProducts(relRes.data.products.filter(p => p._id !== id));
+            }
+          })
+          .catch(() => {}); // silently handle
+      } catch {
+        if (!controller.signal.aborted) navigate('/404');
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
     fetchProduct();
     window.scrollTo(0, 0);
+
+    return () => controller.abort();
   }, [id]);
 
   if (loading || !product) {

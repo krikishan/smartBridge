@@ -15,6 +15,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchData = async () => {
       try {
         const [featuredRes, trendingRes, configRes] = await Promise.all([
@@ -22,17 +24,22 @@ export default function Home() {
           productAPI.getAll({ trending: 'true', limit: 8 }),
           adminAPI.getConfig(),
         ]);
+        if (controller.signal.aborted) return;
         setFeaturedProducts(featuredRes.data.products);
         setTrendingProducts(trendingRes.data.products);
         setCategories(configRes.data.config?.categories || []);
         setBanners(configRes.data.config?.banner || []);
       } catch (err) {
-        console.error('Failed to fetch home data:', err);
+        if (!controller.signal.aborted) {
+          console.error('Failed to fetch home data:', err);
+        }
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
     fetchData();
+
+    return () => controller.abort();
   }, []);
 
   // Auto-rotate banner

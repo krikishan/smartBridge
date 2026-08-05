@@ -8,11 +8,15 @@ export function AuthProvider({ children }) {
     const saved = localStorage.getItem('shopez_user');
     return saved ? JSON.parse(saved) : null;
   });
-  const [loading, setLoading] = useState(true);
+  // Start as not-loading if we have a cached user (render immediately)
+  const [loading, setLoading] = useState(() => {
+    return !!localStorage.getItem('shopez_token') && !localStorage.getItem('shopez_user');
+  });
 
   useEffect(() => {
     const token = localStorage.getItem('shopez_token');
     if (token) {
+      // Background validation — don't block UI rendering
       authAPI.getProfile()
         .then(res => {
           setUser(res.data.user);

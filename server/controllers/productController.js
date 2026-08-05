@@ -194,6 +194,7 @@ const deleteProduct = async (req, res, next) => {
 const getCategories = async (req, res, next) => {
   try {
     const categories = await Product.distinct('category');
+    res.set('Cache-Control', 'public, max-age=300');
     res.json({ success: true, categories });
   } catch (error) {
     next(error);
@@ -205,6 +206,7 @@ const getCategories = async (req, res, next) => {
 const getBrands = async (req, res, next) => {
   try {
     const brands = await Product.distinct('brand');
+    res.set('Cache-Control', 'public, max-age=300');
     res.json({ success: true, brands: brands.filter(Boolean) });
   } catch (error) {
     next(error);

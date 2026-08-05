@@ -2,6 +2,7 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const compression = require('compression');
 const connectDB = require('./config/db');
 const { errorHandler, notFound } = require('./middleware/errorMiddleware');
 
@@ -37,6 +38,7 @@ app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true,
 }));
+app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -84,4 +86,15 @@ app.listen(PORT, () => {
   console.log(`\n🚀 ShopEZ API Server running on port ${PORT}`);
   console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`   Client URL: ${process.env.CLIENT_URL || 'http://localhost:5173'}\n`);
+
+  // Keep-alive self-ping to prevent Render free tier cold starts
+  if (process.env.NODE_ENV === 'production') {
+    const KEEP_ALIVE_INTERVAL = 14 * 60 * 1000; // 14 minutes
+    setInterval(() => {
+      const http = require('http');
+      const url = `http://localhost:${PORT}/api/health`;
+      http.get(url, () => {}).on('error', () => {});
+    }, KEEP_ALIVE_INTERVAL);
+    console.log('   Keep-alive ping enabled (every 14 minutes)');
+  }
 });

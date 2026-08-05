@@ -81,6 +81,7 @@ const getAdminConfig = async (req, res, next) => {
     if (!config) {
       config = await Admin.create({ banner: [], categories: [] });
     }
+    res.set('Cache-Control', 'public, max-age=300');
     res.json({ success: true, config });
   } catch (error) {
     next(error);

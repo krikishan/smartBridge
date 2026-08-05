@@ -84,5 +84,9 @@ productSchema.index({ title: 'text', description: 'text', category: 'text' });
 productSchema.index({ category: 1 });
 productSchema.index({ price: 1 });
 productSchema.index({ rating: -1 });
+productSchema.index({ isFeatured: 1, createdAt: -1 });
+productSchema.index({ isTrending: 1, createdAt: -1 });
+productSchema.index({ brand: 1 });
+productSchema.index({ category: 1, price: 1 });
 
 module.exports = mongoose.model('Product', productSchema);
