@@ -433,7 +433,7 @@ const products = [
     stock: 80,
     category: 'Groceries',
     brand: 'Nutraj',
-    images: ['https://images.unsplash.com/photo-1606567595334-d39972c85dbe?w=500'],
+    images: ['https://images.unsplash.com/photo-1621939514649-280e2ee25f60?w=500'],
     rating: 4.6,
     numReviews: 456,
     isFeatured: true,
