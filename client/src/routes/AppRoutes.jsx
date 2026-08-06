@@ -1,9 +1,9 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ProtectedRoute, AdminRoute } from './ProtectedRoute';
+import Home from '../pages/Home';
 
-// Lazy loaded pages
-const Home = lazy(() => import('../pages/Home'));
+// Lazy loaded pages (not needed on first paint)
 const Products = lazy(() => import('../pages/Products'));
 const ProductDetails = lazy(() => import('../pages/ProductDetails'));
 const Cart = lazy(() => import('../pages/Cart'));

@@ -7,6 +7,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" />
+    <link rel="preconnect" href="https://shopez-api-tvm5.onrender.com" crossorigin />
+    <link rel="dns-prefetch" href="https://shopez-api-tvm5.onrender.com" />
+    <script>
+      // Wake up Render free-tier backend immediately while JS bundle downloads
+      fetch('%VITE_API_URL%/health').catch(() => {});
+    </script>
     <meta name="description" content="ShopEZ - Your one-stop destination for premium products at great prices. Shop electronics, fashion, home goods, and more." />
     <meta name="keywords" content="ecommerce, shopping, online store, electronics, fashion, home" />
     <title>ShopEZ — Premium Online Shopping</title>
