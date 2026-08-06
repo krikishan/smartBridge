@@ -23,9 +23,13 @@ const createOrder = async (req, res, next) => {
       throw new Error('Payment method is required');
     }
 
-    // Validate stock availability for all products before creating order
+    // Batch validate stock availability for all products
+    const productIds = products.map(item => item.productId);
+    const dbProducts = await Product.find({ _id: { $in: productIds } }).lean();
+    const productMap = new Map(dbProducts.map(p => [p._id.toString(), p]));
+
     for (const item of products) {
-      const product = await Product.findById(item.productId);
+      const product = productMap.get(item.productId.toString ? item.productId.toString() : item.productId);
       if (!product) {
         res.status(400);
         throw new Error(`Product "${item.title}" is no longer available`);
@@ -36,12 +40,15 @@ const createOrder = async (req, res, next) => {
       }
     }
 
-    // Decrement stock for all products
-    for (const item of products) {
-      await Product.findByIdAndUpdate(item.productId, {
-        $inc: { stock: -item.quantity },
-      });
-    }
+    // Batch decrement stock in a single DB operation
+    await Product.bulkWrite(
+      products.map(item => ({
+        updateOne: {
+          filter: { _id: item.productId },
+          update: { $inc: { stock: -item.quantity } },
+        },
+      }))
+    );
 
     const order = await Order.create({
       userId: req.user._id,

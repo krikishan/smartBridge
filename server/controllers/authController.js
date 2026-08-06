@@ -131,7 +131,7 @@ const logout = async (req, res) => {
 // @route   GET /api/auth/profile
 const getProfile = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id).populate('wishlist');
+    const user = await User.findById(req.user._id).populate('wishlist', 'title images price discount rating');
     res.json({ success: true, user });
   } catch (error) {
     next(error);
@@ -286,19 +286,23 @@ const deleteAddress = async (req, res, next) => {
 // @route   PUT /api/auth/wishlist/:productId
 const toggleWishlist = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id);
+    const userId = req.user._id;
     const productId = req.params.productId;
-    const index = user.wishlist.indexOf(productId);
 
-    if (index > -1) {
-      user.wishlist.splice(index, 1);
-    } else {
-      user.wishlist.push(productId);
-    }
+    // Check if product is currently in wishlist
+    const user = await User.findById(userId).select('wishlist').lean();
+    const isInWishlist = user.wishlist.some(w => w.toString() === productId);
 
-    await user.save();
-    const populated = await User.findById(req.user._id).populate('wishlist');
-    res.json({ success: true, wishlist: populated.wishlist });
+    // Single atomic update: add or remove
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      isInWishlist
+        ? { $pull: { wishlist: productId } }
+        : { $addToSet: { wishlist: productId } },
+      { new: true }
+    ).populate('wishlist', 'title images price discount rating');
+
+    res.json({ success: true, wishlist: updatedUser.wishlist });
   } catch (error) {
     next(error);
   }

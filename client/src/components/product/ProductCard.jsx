@@ -78,8 +78,9 @@ const ProductCard = memo(function ProductCard({ product, onWishlistChange }) {
   return (
     <motion.div
       className="product-card card card-lift"
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true, margin: '-40px' }}
       transition={{ duration: 0.25 }}
     >
       <Link to={`/products/${product._id}`} className="product-card-link">

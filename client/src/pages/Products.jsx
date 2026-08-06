@@ -72,7 +72,7 @@ export default function Products() {
     fetchProducts();
 
     return () => controller.abort();
-  }, [activeCategory, activeBrand, activeSort, activeMinPrice, activeMaxPrice, activeRating, activePage, searchParams]);
+  }, [activeCategory, activeBrand, activeSort, activeMinPrice, activeMaxPrice, activeRating, activePage]);
 
   const updateFilter = useCallback((key, value) => {
     const newParams = new URLSearchParams(searchParams);

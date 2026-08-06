@@ -67,7 +67,7 @@ const addToCart = async (req, res, next) => {
     }
 
     await cart.save();
-    cart = await Cart.findById(cart._id).populate('items.productId');
+    await cart.populate('items.productId');
 
     res.status(201).json({ success: true, cart });
   } catch (error) {
@@ -112,10 +112,8 @@ const updateQuantity = async (req, res, next) => {
     item.quantity = quantity;
     await cart.save();
 
-    const updatedCart = await Cart.findById(cart._id).populate(
-      'items.productId'
-    );
-    res.json({ success: true, cart: updatedCart });
+    await cart.populate('items.productId');
+    res.json({ success: true, cart });
   } catch (error) {
     next(error);
   }
@@ -137,10 +135,8 @@ const removeItem = async (req, res, next) => {
     );
 
     await cart.save();
-    const updatedCart = await Cart.findById(cart._id).populate(
-      'items.productId'
-    );
-    res.json({ success: true, cart: updatedCart });
+    await cart.populate('items.productId');
+    res.json({ success: true, cart });
   } catch (error) {
     next(error);
   }
