@@ -23,6 +23,8 @@ export default function Products() {
   const activeMaxPrice = searchParams.get('maxPrice') || '';
   const activeRating = searchParams.get('rating') || '';
   const activePage = parseInt(searchParams.get('page') || '1');
+  const activeFeatured = searchParams.get('featured');
+  const activeTrending = searchParams.get('trending');
 
   useEffect(() => {
     const fetchFilters = async () => {
@@ -56,8 +58,8 @@ export default function Products() {
         if (activeMinPrice) params.minPrice = activeMinPrice;
         if (activeMaxPrice) params.maxPrice = activeMaxPrice;
         if (activeRating) params.rating = activeRating;
-        if (searchParams.get('featured')) params.featured = 'true';
-        if (searchParams.get('trending')) params.trending = 'true';
+        if (activeFeatured) params.featured = 'true';
+        if (activeTrending) params.trending = 'true';
 
         const res = await productAPI.getAll(params);
         if (controller.signal.aborted) return;
@@ -72,7 +74,17 @@ export default function Products() {
     fetchProducts();
 
     return () => controller.abort();
-  }, [activeCategory, activeBrand, activeSort, activeMinPrice, activeMaxPrice, activeRating, activePage]);
+  }, [
+    activeCategory,
+    activeBrand,
+    activeSort,
+    activeMinPrice,
+    activeMaxPrice,
+    activeRating,
+    activePage,
+    activeFeatured,
+    activeTrending
+  ]);
 
   const updateFilter = useCallback((key, value) => {
     const newParams = new URLSearchParams(searchParams);
@@ -83,10 +95,12 @@ export default function Products() {
     }
     newParams.set('page', '1');
     setSearchParams(newParams);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [searchParams, setSearchParams]);
 
   const clearFilters = useCallback(() => {
     setSearchParams({ sort: 'newest' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [setSearchParams]);
 
   const setPage = useCallback((page) => {
@@ -261,6 +275,7 @@ export default function Products() {
                       params.delete('maxPrice');
                       params.set('page', '1');
                       setSearchParams(params);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}><HiOutlineX /></button>
                   </span>
                 )}
